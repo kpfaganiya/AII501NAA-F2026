@@ -13,18 +13,18 @@ AII501NAA - F2026
 
 ## b) Environment Properties
 
-- **Fully observable** — everything needed to classify the email (header + readable body) is available in the file at once; nothing is hidden.
-- **Deterministic** — the same email against the same lists always produces the same classification.
-- **Episodic** — each email is classified independently; no memory of prior emails is needed or used.
-- **Static** — the email content and the lists do not change while the agent is processing a given email.
-- **Discrete** — a finite set of percepts (a fixed vocabulary/domain space) and a finite set of actions (file as spam / file as not-spam).
-- **Single-agent** — only this agent acts in the environment.
+- **Fully observable** - everything needed to classify the email (header + readable body) is available in the file at once; nothing is hidden.
+- **Deterministic** - the same email against the same lists always produces the same classification.
+- **Episodic** - each email is classified independently; no memory of prior emails is needed or used.
+- **Static** - the email content and the lists do not change while the agent is processing a given email.
+- **Discrete** - a finite set of percepts (a fixed vocabulary/domain space) and a finite set of actions (file as spam / file as not-spam).
+- **Single-agent** - only this agent acts in the environment.
 
 ## c) Agent Type
 
 A **simple reflex agent** is the most appropriate design.
 
-Justification: because the environment is episodic and fully observable (part b), the correct classification of any given email depends *only* on that email's own header and body — never on anything the agent has seen before. There is no need to track state across emails, plan ahead, or reason about future consequences. The entire decision reduces to a small set of condition-action rules (allow-list domain → not spam; restrict-list domain → spam; bad-word count over threshold → spam; otherwise → not spam), which is exactly the structure a simple reflex agent is built for (AIMA, Figure 2.8). A model-based, goal-based, or utility-based agent would add machinery (internal state, goal search, utility functions) that this problem has no use for.
+Justification: because the environment is episodic and fully observable (part b), the correct classification of any given email depends *only* on that email's own header and body - never on anything the agent has seen before. There is no need to track state across emails, plan ahead, or reason about future consequences. The entire decision reduces to a small set of condition-action rules (allow-list domain → not spam; restrict-list domain → spam; bad-word count over threshold → spam; otherwise → not spam), which is exactly the structure a simple reflex agent is built for (AIMA, Figure 2.8). A model-based, goal-based, or utility-based agent would add machinery (internal state, goal search, utility functions) that this problem has no use for.
 
 ## d) Implementation
 
@@ -41,10 +41,10 @@ function SIMPLE-REFLEX-AGENT(percept) returns an action
 
 | Book concept | Code |
 |---|---|
-| sensors | `perceive()` — parses the `.eml` file's `From` domain and readable (text-type) body |
-| `INTERPRET-INPUT` | `interpret_input()` — reduces the percept to `(sender_domain, bad_word_count)` |
+| sensors | `perceive()` - parses the `.eml` file's `From` domain and readable (text-type) body |
+| `INTERPRET-INPUT` | `interpret_input()` - reduces the percept to `(sender_domain, bad_word_count)` |
 | persistent rules | `self.rules`, built once in `__init__` |
-| `RULE-MATCH` | `rule_match()` — returns the first rule whose condition holds, in priority order |
+| `RULE-MATCH` | `rule_match()` - returns the first rule whose condition holds, in priority order |
 | action / actuator | `act()` returns the classification; `file_email()` writes the file into the correct directory |
 
 **Rule priority** (matches the assignment spec exactly):
