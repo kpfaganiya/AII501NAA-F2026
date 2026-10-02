@@ -1,4 +1,4 @@
-# Activity 1 — Question 1: Spam Filter Email Agent (Part A)
+# Activity 1 - Question 1: Spam Filter Email Agent (Part A)
 
 AII501NAA - F2026
 
