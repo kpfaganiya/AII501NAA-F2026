@@ -166,14 +166,7 @@ def run(inbox_dir: Path, spam_dir: Path, email_dir: Path,
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Spam filter email agent")
-    parser.add_argument("--inbox", default="test_data/inbox")
-    parser.add_argument("--spam-dir", default="output/spam")
-    parser.add_argument("--email-dir", default="output/email")
-    parser.add_argument("--allow-list", default="test_data/allow_list.txt")
-    parser.add_argument("--restrict-list", default="test_data/restrict_list.txt")
-    parser.add_argument("--bad-words", default="test_data/bad_words.txt")
-    args = parser.parse_args()
+    
 
     results = run(
         Path(args.inbox), Path(args.spam_dir), Path(args.email_dir),
