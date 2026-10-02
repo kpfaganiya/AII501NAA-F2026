@@ -2,33 +2,29 @@
 
 AII501NAA - F2026
 
-## a) Task Environment - PEAS
+## a) Task environment (PEAS)
 
-| | |
-|---|---|
-| **Performance measure** | Correctly classifies each email as spam or not-spam; minimizes false positives (legitimate email marked spam) and false negatives (spam let through); correctly parses the header and readable (text-type) body/attachment content; correctly files each email into the right directory. |
-| **Environment** | The stream of incoming `.eml` files (header + body, possibly with text-type attachments); the allow list; the restrict list; the bad word list; the file system the agent reads from and writes into (spam directory, email directory). |
-| **Actuators** | Write/move the email into the **spam** directory; write/move the email into the **email** (not-spam) directory. |
-| **Sensors** | Header parser (reads the `From` field / sender domain); body/text reader (reads and tokenizes the readable body and text-type attachment content); list lookup (checks sender domain against the allow/restrict lists and words against the bad word list). |
+**Performance measure:** how accurately the agent classifies emails as spam or not spam. Specifically it should minimize false positives (good email marked as spam) and false negatives (spam that gets through), and it needs to correctly parse the header and any readable (text) body/attachments, then file each email in the right place.
 
-## b) Environment Properties
+**Environment:** the incoming emails themselves (.eml files, header + body, sometimes with text attachments), the allow list, the restrict list, the bad word list, and the file system it reads from / writes into.
 
-- **Fully observable** - everything needed to classify the email (header + readable body) is available in the file at once; nothing is hidden.
-- **Deterministic** - the same email against the same lists always produces the same classification.
-- **Episodic** - each email is classified independently; no memory of prior emails is needed or used.
-- **Static** - the email content and the lists do not change while the agent is processing a given email.
-- **Discrete** - a finite set of percepts (a fixed vocabulary/domain space) and a finite set of actions (file as spam / file as not-spam).
-- **Single-agent** - only this agent acts in the environment.
+**Actuators:** moving/writing the email into the spam directory, or moving/writing it into the not-spam (email) directory. That's really the only two things the agent can "do."
 
-## c) Agent Type
+**Sensors:** reading the From header to get the sender's domain, reading the body (and any text attachments) to pull out words, and checking those against the three lists.
 
-A **simple reflex agent** is the most appropriate design.
+## b) Environment properties
 
-Justification: because the environment is episodic and fully observable (part b), the correct classification of any given email depends *only* on that email's own header and body — never on anything the agent has seen before. There is no need to track state across emails, plan ahead, or reason about future consequences. The entire decision reduces to a small set of condition-action rules (allow-list domain → not spam; restrict-list domain → spam; bad-word count over threshold → spam; otherwise → not spam), which is exactly the structure a simple reflex agent is built for (AIMA, Figure 2.8). A model-based, goal-based, or utility-based agent would add machinery (internal state, goal search, utility functions) that this problem has no use for.
+Going through the standard set of properties from the book:
+
+It's fully observable - everything the agent needs (header + body) is right there in the file, nothing hidden. It's deterministic - same email, same lists, same result every time, no randomness involved. It's episodic, since each email gets judged on its own; the agent doesn't need to remember anything about emails it classified earlier. It's static, because nothing about the email or the lists changes while the agent is in the middle of deciding. It's discrete - there's a finite set of possible words/domains and only two possible actions. And it's single-agent, since nothing else is acting in this environment alongside it.
+
+## c) Agent type
+
+I went with a simple reflex agent here. The reasoning is basically that the environment properties in (b) already tell you this is the right call - since it's episodic and fully observable, the correct answer for any email depends only on that email, not on anything that happened before it. There's no reason to carry state between emails, plan ahead, or weigh outcomes - the whole decision is just a handful of condition-action rules (domain on allow list → not spam, domain on restrict list → spam, too many bad words → spam, otherwise not spam). That's exactly the shape of problem a simple reflex agent is meant for. Anything more complex (model-based, goal-based, utility-based) would just be adding machinery this problem doesn't need.
 
 ## d) Implementation
 
-Implemented in `spam_filter_agent.py` as a `SpamFilterAgent` class that mirrors the book's simple-reflex-agent pseudocode directly:
+`spam_filter_agent.py` implements this as a `SpamFilterAgent` class, following the simple reflex agent structure from the book (Figure 2.8):
 
 ```
 function SIMPLE-REFLEX-AGENT(percept) returns an action
@@ -39,69 +35,55 @@ function SIMPLE-REFLEX-AGENT(percept) returns an action
     return action
 ```
 
-| Book concept | Code |
-|---|---|
-| sensors | `perceive()` - parses the `.eml` file's `From` domain and readable (text-type) body |
-| `INTERPRET-INPUT` | `interpret_input()` - reduces the percept to `(sender_domain, bad_word_count)` |
-| persistent rules | `self.rules`, built once in `__init__` |
-| `RULE-MATCH` | `rule_match()` - returns the first rule whose condition holds, in priority order |
-| action / actuator | `act()` returns the classification; `file_email()` writes the file into the correct directory |
+Roughly, the pieces map like this: `perceive()` is the sensors, pulling the sender's domain and readable body text out of the .eml file. `interpret_input()` is `INTERPRET-INPUT` - it reduces all of that down to just `(sender_domain, bad_word_count)`, which is all the rules actually need to look at. The rules themselves are set up once in `__init__` (the "persistent" part), and `rule_match()` walks through them in order and returns the first one that applies. `act()` ties it together and returns the classification, and `file_email()` is the actuator - it actually copies the file into the right folder.
 
-**Rule priority** (matches the assignment spec exactly):
-1. Sender domain on the allow list → `not_spam`, regardless of content.
-2. Else, sender domain on the restrict list → `spam`, regardless of content.
-3. Else, more than 5 bad words in the body → `spam`.
-4. Else → `not_spam`.
+The rules are checked in this order, which matches how the assignment describes them:
+1. sender on the allow list → not spam, no matter what's in the body
+2. otherwise, sender on the restrict list → spam, no matter what's in the body
+3. otherwise, more than 5 bad words in the body → spam
+4. otherwise → not spam
 
 ## Assumptions
 
-- Only MIME parts with content-maintype `text` (e.g. `text/plain`, `text/html`) are read, per the assignment's note that text-type attachments are readable by the agent; non-text attachments are ignored/unreadable.
-- Domain matching is case-insensitive and exact (e.g. `trusted.com` does not implicitly match `mail.trusted.com`); this can be widened to a suffix match if the instructor intends subdomains to count.
-- "More than 5 words" (part A intro) is interpreted as a **strict** inequality — exactly 5 bad words is *not* spam; 6 or more is. This boundary is covered explicitly by a test case.
-- Bad-word matching is case-insensitive and strips surrounding punctuation, but does not stem/lemmatize words (e.g. "clicking" would not match "click").
+A few things I had to decide on since they weren't spelled out exactly in the assignment:
 
-## Project Structure
+Only text-type parts of the email (text/plain, text/html, etc.) get read - this matches the assignment's note that text attachments are readable, so anything else is just skipped. Domain matching is exact and case-insensitive, so `trusted.com` won't match `mail.trusted.com` unless you widen it to a subdomain match. "More than 5 words" is read as a strict greater-than - exactly 5 bad words is still not spam, you need 6+ - and there's a test that checks this boundary specifically since it's an easy thing to get backwards. Bad word matching strips punctuation and ignores case but doesn't do any stemming, so "click" won't catch "clicking."
+
+## Project structure
 
 ```
 Activity1_PartA/
-├── README.md                  # this file
-├── spam_filter_agent.py       # agent implementation
-├── test_spam_filter.py        # pytest test suite
+├── README.md
+├── spam_filter_agent.py
+├── test_spam_filter.py
 └── test_data/
     ├── allow_list.txt
     ├── restrict_list.txt
     ├── bad_words.txt
     └── inbox/
-        ├── allow_list_override.eml     # allow list beats bad words  -> not_spam
-        ├── restrict_list_override.eml  # restrict list beats clean content -> spam
-        ├── bad_words_spam.eml          # 6 bad words, unknown domain -> spam
-        ├── clean_email.eml             # 0 bad words, unknown domain -> not_spam
-        ├── boundary_five_words.eml     # exactly 5 bad words -> not_spam (boundary)
-        └── boundary_six_words.eml      # exactly 6 bad words -> spam (boundary)
+        ├── allow_list_override.eml
+        ├── restrict_list_override.eml
+        ├── bad_words_spam.eml
+        ├── clean_email.eml
+        ├── boundary_five_words.eml
+        └── boundary_six_words.eml
 ```
 
 ## Setup
 
-Requires Python 3.10+ and `pytest`.
+Needs Python 3.10+ and pytest.
 
 ```bash
 pip install pytest
 ```
 
-## Execution
-
-Run the agent over the sample inbox (classifies every `.eml` file in `test_data/inbox` and copies each into `output/spam` or `output/email`):
+## Running it
 
 ```bash
 python3 spam_filter_agent.py
 ```
 
-Custom paths:
-
-```bash
-python3 spam_filter_agent.py --inbox path/to/inbox --spam-dir path/to/spam --email-dir path/to/email \
-    --allow-list path/to/allow_list.txt --restrict-list path/to/restrict_list.txt --bad-words path/to/bad_words.txt
-```
+This runs every .eml file in `test_data/inbox` through the agent and copies each one into `output/spam` or `output/email` depending on the result. You can point it at different folders/lists with `--inbox`, `--spam-dir`, `--email-dir`, `--allow-list`, `--restrict-list`, `--bad-words`.
 
 ## Testing
 
@@ -109,4 +91,4 @@ python3 spam_filter_agent.py --inbox path/to/inbox --spam-dir path/to/spam --ema
 pytest test_spam_filter.py -v
 ```
 
-8 tests cover: allow-list override, restrict-list override, bad-word threshold spam case, clean email, the exactly-5/exactly-6 boundary around the threshold, correct file placement, and rule-priority ordering. All 8 currently pass.
+8 tests, covering the allow-list override, the restrict-list override, the bad-word threshold case, a clean email, the exactly-5/exactly-6 boundary, that files actually land in the right folder, and that the rules get checked in the right priority order. All 8 pass.
