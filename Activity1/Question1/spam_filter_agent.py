@@ -2,28 +2,6 @@
 Spam Filter Email Agent
 ========================
 AII501NAA - Activity 1, Question 1 (Part A)
-
-Implements a SIMPLE REFLEX AGENT (AIMA, 4th ed., Figure 2.8) that classifies
-incoming .eml files as spam or not-spam and files them accordingly.
-
-Book structure being followed:
-
-    function SIMPLE-REFLEX-AGENT(percept) returns an action
-        persistent: rules, a set of condition-action rules
-
-        state  <- INTERPRET-INPUT(percept)
-        rule   <- RULE-MATCH(state, rules)
-        action <- rule.ACTION
-        return action
-
-Each stage of that pseudocode is implemented below as its own method, so the
-mapping from the book's diagram to the code is explicit:
-
-    sensors         -> perceive()
-    INTERPRET-INPUT -> interpret_input()
-    rules           -> self.rules   (built once in __init__, i.e. "persistent")
-    RULE-MATCH      -> rule_match()
-    action          -> act() / file_email() (actuator)
 """
 
 from __future__ import annotations
@@ -36,9 +14,6 @@ from pathlib import Path
 from typing import Callable, List
 
 
-# ---------------------------------------------------------------------------
-# Percept: raw data the agent's sensors pull from one .eml file
-# ---------------------------------------------------------------------------
 @dataclass
 class EmailPercept:
     file_path: Path
@@ -48,8 +23,6 @@ class EmailPercept:
 
 # ---------------------------------------------------------------------------
 # State: the interpreted percept - the only thing the rules look at.
-# The task environment is episodic (see Part A, item b), so the agent needs
-# no memory of past emails: this state is rebuilt from scratch every time.
 # ---------------------------------------------------------------------------
 @dataclass
 class EmailState:
@@ -67,7 +40,7 @@ class Rule:
 class SpamFilterAgent:
     """Simple reflex agent that classifies an email as spam / not spam."""
 
-    # "If more than 5 words within the body ... are found on this list"
+    # "If more than 5 words within the body are found on this list"
     BAD_WORD_THRESHOLD = 5
 
     def __init__(self, allow_list: set[str], restrict_list: set[str], bad_words: set[str]):
@@ -141,28 +114,28 @@ class SpamFilterAgent:
             body_text=" ".join(body_parts),
         )
 
-    # -- INTERPRET-INPUT -------------------------------------------------
+    # INTERPRET-INPUT -------------------------------------------------
     def interpret_input(self, percept: EmailPercept) -> EmailState:
         tokens = percept.body_text.lower().split()
         cleaned = [t.strip('.,!?;:"\'()[]') for t in tokens]
         count = sum(1 for t in cleaned if t in self.bad_words)
         return EmailState(sender_domain=percept.sender_domain, bad_word_count=count)
 
-    # -- RULE-MATCH --------------------------------------------------------
+    # RULE-MATCH --------------------------------------------------------
     def rule_match(self, state: EmailState) -> Rule:
         for rule in self.rules:
             if rule.condition(state):
                 return rule
         raise RuntimeError("unreachable: default rule always matches")
 
-    # -- Agent program: SIMPLE-REFLEX-AGENT(percept) -----------------------
+    # Agent program: SIMPLE-REFLEX-AGENT(percept) -----------------------
     def act(self, file_path: Path) -> str:
         percept = self.perceive(file_path)
         state = self.interpret_input(percept)
         rule = self.rule_match(state)
         return rule.action
 
-    # -- Actuators -----------------------------------------------------------
+    # Actuators -----------------------------------------------------------
     def file_email(self, file_path: Path, spam_dir: Path, email_dir: Path) -> str:
         """Actuator: move/copy the email into the spam or email directory."""
         action = self.act(file_path)
