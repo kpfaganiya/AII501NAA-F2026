@@ -13,9 +13,9 @@ Jugs: 12-gallon, 8-gallon, 3-gallon, plus an unlimited faucet. Goal: measure out
 **Goal state(s):** any state where at least one jug holds exactly 1 gallon: `x = 1 ∨ y = 1 ∨ z = 1`. This is a goal *test*, not a single target state — many triples satisfy it (e.g. `(1,0,0)`, `(0,1,0)`, `(9,8,1)`, …).
 
 **Actions** (applicable depending on the current state):
-- `Fill(J)` — fill jug *J* completely from the faucet (applicable if *J* isn't already full)
-- `Empty(J)` — empty jug *J* onto the ground (applicable if *J* isn't already empty)
-- `Pour(i → j)` — pour from jug *i* into jug *j* until *i* is empty or *j* is full, whichever comes first (applicable if *i* has water and *j* has room)
+- `Fill(J)` - fill jug *J* completely from the faucet (applicable if *J* isn't already full)
+- `Empty(J)` - empty jug *J* onto the ground (applicable if *J* isn't already empty)
+- `Pour(i → j)` - pour from jug *i* into jug *j* until *i* is empty or *j* is full, whichever comes first (applicable if *i* has water and *j* has room)
 
 **Transition model** `RESULT(state, action)`:
 - `Fill(J)`: `contents[J] ← capacity[J]`; other jugs unchanged.
@@ -34,7 +34,7 @@ Why it's weak: a single action (especially a `Pour`) can change a jug's contents
 
 ## c) Is Any Search Algorithm Guaranteed to Reach a Goal State?
 
-**No — not *any* search algorithm.** It depends on whether the algorithm is complete, and completeness here depends on how repeated states are handled.
+**No - not *any* search algorithm.** It depends on whether the algorithm is complete, and completeness here depends on how repeated states are handled.
 
 - The state graph contains **cycles**: e.g. `Fill(12)` then `Empty(12)` returns to the exact same state. A **tree-search** version of depth-first search, which doesn't track previously visited states, can loop forever re-exploring the same cycle and is therefore **not guaranteed** to terminate, let alone find the goal — even though a solution exists.
 - A **graph-search** version of DFS, or BFS (which tracks `reached` states, as in Figure 3.9), cannot revisit a state twice. Combined with the fact that the state space is finite (≤ 468 states) and a solution is known to exist (a classic number-theory result: since gcd(3, 8) = 1, every integer amount from 0 up to 8 — including 1 — is reachable using just the 8- and 3-gallon jugs), any **complete** search strategy is guaranteed to reach a goal state in a finite number of steps.
