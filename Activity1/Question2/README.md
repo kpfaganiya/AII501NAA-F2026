@@ -1,49 +1,40 @@
-# Activity 1 — Question 2: Three-Jug Search Problem (Part B)
+# Activity 1 - Question 2: Three-Jug Search Problem (Part B)
 
 AII501NAA - F2026
 
 Jugs: 12-gallon, 8-gallon, 3-gallon, plus an unlimited faucet. Goal: measure out exactly 1 gallon.
 
-## a) States, Actions, Transition Model
+## a) States, actions, transition model
 
-**State:** a triple `(x, y, z)` — gallons currently in the 12-, 8-, and 3-gallon jug respectively, with `0 ≤ x ≤ 12`, `0 ≤ y ≤ 8`, `0 ≤ z ≤ 3`. This gives a finite state space of at most 13 × 9 × 4 = 468 states.
+I'm representing a state as a triple `(x, y, z)` - gallons currently in the 12-, 8-, and 3-gallon jug. So `0 ≤ x ≤ 12`, `0 ≤ y ≤ 8`, `0 ≤ z ≤ 3`, which caps the whole state space at 13 × 9 × 4 = 468 possible states.
 
-**Initial state:** `(0, 0, 0)` — all jugs start empty. *(Not stated explicitly in the problem; stated here as an assumption.)*
+The initial state is `(0, 0, 0)` - all jugs empty. The assignment doesn't actually say this outright, so I'm stating it as an assumption rather than something given.
 
-**Goal state(s):** any state where at least one jug holds exactly 1 gallon: `x = 1 ∨ y = 1 ∨ z = 1`. This is a goal *test*, not a single target state — many triples satisfy it (e.g. `(1,0,0)`, `(0,1,0)`, `(9,8,1)`, …).
+The goal isn't one specific state, it's a condition: any state where at least one jug has exactly 1 gallon in it (`x = 1 ∨ y = 1 ∨ z = 1`). There are a bunch of states that satisfy that - `(1,0,0)`, `(0,1,0)`, `(9,8,1)`, and so on.
 
-**Actions** (applicable depending on the current state):
-- `Fill(J)` — fill jug *J* completely from the faucet (applicable if *J* isn't already full)
-- `Empty(J)` — empty jug *J* onto the ground (applicable if *J* isn't already empty)
-- `Pour(i → j)` — pour from jug *i* into jug *j* until *i* is empty or *j* is full, whichever comes first (applicable if *i* has water and *j* has room)
+Actions available depend on the state: `Fill(J)` fills jug J from the faucet (only if it isn't already full), `Empty(J)` dumps jug J out (only if it isn't already empty), and `Pour(i → j)` pours from jug i into jug j until either i runs out or j fills up, whichever happens first (only applicable if i has something in it and j has room).
 
-**Transition model** `RESULT(state, action)`:
-- `Fill(J)`: `contents[J] ← capacity[J]`; other jugs unchanged.
-- `Empty(J)`: `contents[J] ← 0`; other jugs unchanged.
-- `Pour(i → j)`: `amount ← min(contents[i], capacity[j] − contents[j])`; then `contents[i] -= amount`, `contents[j] += amount`; the third jug is unchanged.
+For the transition model: `Fill(J)` just sets that jug to its capacity. `Empty(J)` sets it to 0. `Pour(i → j)` computes `amount = min(contents[i], capacity[j] - contents[j])`, then subtracts that from i and adds it to j. Every action costs 1, so the cheapest solution is just whichever path uses the fewest actions.
 
-Every action has cost 1 (one "move"), so the cheapest solution is simply the fewest number of actions.
+## b) Does a heuristic make sense here?
 
-## b) Does a Heuristic Make Sense?
+Sort of, but it's not a great one, honestly. You could define something like `h(state) = min(|x-1|, |y-1|, |z-1|)` - the smallest distance from any jug's current amount to 1 gallon. It does hit 0 right at the goal, which is the basic shape you want.
 
-A heuristic *can* be defined, but it's a weak one, which is part of why this problem is well-suited to plain BFS rather than needing an informed search like A*.
+The problem is that a single pour can swing a jug's contents by anywhere from 1 gallon up to a whole jug's capacity - it's not like each action only moves you 1 gallon closer or further. So a state that looks "close" under this heuristic might actually be several moves away, and a state that looks "far" might be one move away (like emptying a full jug). It doesn't track the real number of remaining actions very well. Given how small the whole state space is (under 500 states), it's not really worth the trouble of an informed search here anyway - which is probably why the assignment just asks for plain BFS instead of something like A*.
 
-**Informal heuristic:** `h(state) = min(|x − 1|, |y − 1|, |z − 1|)` — the smallest distance (in gallons) from any jug's current contents to the goal amount of 1. It's 0 exactly at a goal state, which is the right shape for a heuristic.
+## c) Is any search algorithm guaranteed to find a goal?
 
-Why it's weak: a single action (especially a `Pour`) can change a jug's contents by any amount up to a whole jug's capacity, not by one gallon at a time. So a state that looks "close" under this heuristic (say, 2 gallons away) might actually be reachable in one action, while a state that looks "far" (say, 8 gallons away) might also be one action away (e.g. emptying a full jug). The heuristic doesn't reliably track the true number of *actions* remaining, so it gives only a loose signal rather than a tight, admissible estimate. Given that the full state space is small (at most 468 states), the benefit an informed search would get from this heuristic is marginal — which is consistent with the assignment asking specifically for plain BFS here.
+Not any algorithm, no - it really depends on how it handles states it's already seen.
 
-## c) Is Any Search Algorithm Guaranteed to Reach a Goal State?
+The state graph has cycles in it. For example, `Fill(12)` followed by `Empty(12)` just puts you back where you started. If you ran a plain depth-first search that doesn't track which states it's already visited (tree-search, not graph-search), it could get stuck looping through a cycle like that forever, even though a solution exists somewhere in the graph.
 
-**No — not *any* search algorithm.** It depends on whether the algorithm is complete, and completeness here depends on how repeated states are handled.
+But if you do track visited states - which is what graph-search does, and what BFS does by keeping a `reached` set - then you can't ever revisit the same state twice. Combined with the fact that the state space is finite, and that a solution is actually reachable here (this is a known number theory result - since gcd(3,8) = 1, you can measure any integer amount from 0 to 8 using just the 8 and 3 gallon jugs), that guarantees the search will eventually hit the goal.
 
-- The state graph contains **cycles**: e.g. `Fill(12)` then `Empty(12)` returns to the exact same state. A **tree-search** version of depth-first search, which doesn't track previously visited states, can loop forever re-exploring the same cycle and is therefore **not guaranteed** to terminate, let alone find the goal — even though a solution exists.
-- A **graph-search** version of DFS, or BFS (which tracks `reached` states, as in Figure 3.9), cannot revisit a state twice. Combined with the fact that the state space is finite (≤ 468 states) and a solution is known to exist (a classic number-theory result: since gcd(3, 8) = 1, every integer amount from 0 up to 8 — including 1 — is reachable using just the 8- and 3-gallon jugs), any **complete** search strategy is guaranteed to reach a goal state in a finite number of steps.
-
-So the honest answer is: completeness is a property of the *algorithm's handling of repeated states*, not of "any search algorithm" in general. **BFS with graph-search (as implemented in part d) is guaranteed to reach the goal**, because the space is finite, a goal is reachable from the initial state, and `reached` prevents infinite loops.
+So the real answer is that it's not about the algorithm being BFS or DFS specifically, it's about whether it avoids re-exploring states it's already seen. BFS as implemented in part (d), using a `reached` set, is guaranteed to find the goal because the space is finite and a solution exists.
 
 ## d) Implementation
 
-Implemented in `three_jug_search.py` as a direct translation of **AIMA Figure 3.9**:
+`three_jug_search.py` implements this pretty much directly from the book's BFS pseudocode (Figure 3.9):
 
 ```
 function BREADTH-FIRST-SEARCH(problem) returns a solution node, or failure
@@ -62,16 +53,9 @@ function BREADTH-FIRST-SEARCH(problem) returns a solution node, or failure
     return failure
 ```
 
-| Book concept | Code |
-|---|---|
-| `NODE`, parent/action/path-cost | `Node` dataclass |
-| `problem.INITIAL` | `ThreeJugProblem.initial` = `(0, 0, 0)` |
-| `problem.IS-GOAL` | `ThreeJugProblem.is_goal()` |
-| `EXPAND(problem, node)` | `ThreeJugProblem.expand()`, using `actions()` + `result()` |
-| FIFO `frontier` | `collections.deque`, `popleft()`/`append()` |
-| `reached` | a Python `set` of visited states |
+`ThreeJugProblem` holds the problem formulation - `initial`, `is_goal()`, `actions()`, `result()`, and `expand()` which ties `actions()` and `result()` together to generate child nodes. `breadth_first_search()` is the actual search loop, using a `deque` as the FIFO frontier and a plain set for `reached`.
 
-Running it on the defined problem finds the known-optimal 3-action solution:
+Running it finds the known 3-move solution:
 
 ```
 Step  Action                      State (12, 8, 3)
@@ -83,37 +67,32 @@ Step  Action                      State (12, 8, 3)
 
 ## Assumptions
 
-- Initial state is all jugs empty `(0, 0, 0)` — not stated explicitly in the problem, so stated here outright.
-- "Measure out exactly one gallon" is interpreted as **any one jug** containing exactly 1 gallon at some point (not all three simultaneously, and not poured onto the ground separately).
-- Pours are "until empty or full" (standard water-jug-puzzle rule) — partial, arbitrary-amount pours are not modeled as separate actions, since the problem doesn't suggest the jugs have volume markings.
-- Water poured "onto the ground" (per `Empty`) is lost — it does not count toward any jug.
+Initial state is all jugs empty - not stated directly in the problem, so I'm assuming it. "Measure exactly one gallon" is being read as any single jug holding exactly 1 gallon at some point, not all three jugs simultaneously or anything like that. Pours go until empty-or-full rather than some arbitrary partial amount, since there's no indication the jugs have volume markings for measuring partial pours. And anything emptied onto the ground is just gone - it doesn't count toward any jug.
 
-## Project Structure
+## Project structure
 
 ```
 Activity1_PartB/
-├── README.md                     # this file
-├── three_jug_search.py           # problem formulation + BFS (Fig. 3.9)
-└── test_three_jug_search.py      # pytest test suite
+├── README.md
+├── three_jug_search.py
+└── test_three_jug_search.py
 ```
 
 ## Setup
 
-Requires Python 3.10+ and `pytest`.
+Needs Python 3.10+ and pytest.
 
 ```bash
 pip install pytest
 ```
 
-## Execution
+## Running it
 
 ```bash
 python3 three_jug_search.py
 ```
 
-Prints the shortest action sequence (and resulting states) from `(0,0,0)` to a state with exactly 1 gallon in some jug.
-
-To solve for a different target amount, edit `ThreeJugProblem(goal_amount=1)` in the `__main__` block.
+Prints the shortest sequence of actions from `(0,0,0)` to a state with 1 gallon in some jug. To try a different target amount, change `ThreeJugProblem(goal_amount=1)` in the `__main__` block.
 
 ## Testing
 
@@ -121,4 +100,4 @@ To solve for a different target amount, edit `ThreeJugProblem(goal_amount=1)` in
 pytest test_three_jug_search.py -v
 ```
 
-14 tests cover: the problem formulation (initial state, goal test, action generation, transition model for `Fill`/`Empty`/`Pour`, including partial-pour edge cases), that BFS finds a goal state, that the solution is confirmed optimal at 3 actions (cross-checked independently by brute force), that the reconstructed solution path is internally consistent (each state really does follow from applying its action to the previous state), and that BFS correctly reports failure for an unreachable goal amount. All 14 currently pass.
+14 tests, covering the problem formulation itself (initial state, goal test, which actions are valid in a given state, the transition model for each action type including partial-pour edge cases), that BFS actually finds a goal, that the solution really is optimal at 3 moves (double-checked with a separate brute-force check, not just trusting the BFS code itself), that the solution path is internally consistent (each step's state really does follow from applying that step's action to the previous state), and that it fails cleanly for a target amount that isn't reachable. All 14 pass.
