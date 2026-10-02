@@ -1,0 +1,3 @@
+# Domains that are always classified as spam, regardless of content
+spamdomain.com
+phishy.net
