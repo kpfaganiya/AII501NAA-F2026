@@ -1,12 +1,12 @@
-# Parts 2–4: Propositional Logic Answers
+# Parts 2-4: Propositional Logic Answers
 
 All answers below are worked by hand (truth tables and equivalence rules); no code is needed for Parts 2–4.
 
 ---
 
-## Part 2 – Satisfiability (10%)
+## Part 2 - Satisfiability (10%)
 
-### a. Smoke ⇒ Fire — **neither** (satisfiable, but not valid)
+### a. Smoke ⇒ Fire - **neither** (satisfiable, but not valid)
 
 | Smoke | Fire | Smoke ⇒ Fire |
 |:-----:|:----:|:------------:|
@@ -46,7 +46,7 @@ L and R are the same sentence, so L ⇔ R is valid.
 
 ---
 
-## Part 3 – Models (10%)
+## Part 3 - Models (10%)
 
 The vocabulary {A, B, C, D} has 2⁴ = 16 possible models.
 
