@@ -52,3 +52,64 @@ def winner(board):
 
 def terminal(board):
     return winner(board) is not None or not legal_moves(board)
+
+def objective_score(board, player):
+    """Rule-based evaluation from the player's perspective."""
+    opponent = 3 - player
+    result = winner(board)
+
+    if result == player:
+        return 1.0
+    if result == opponent:
+        return -1.0
+    if not legal_moves(board):
+        return 0.0
+    
+    score = 0.0
+
+    # Centre column
+    for row in range(ROWS):
+        if board[row][3] == player:
+            score += 0.08
+        elif board[row][3] == opponent:
+            score -= 0.08
+    
+    windows = []
+
+    # Horizontal windows.
+    for r in range(ROWS):
+        for c in range(COLS - 3):
+            windows.append([board[r][c + i] for i in range(4)])
+    # Vertical windows.
+    for r in range(ROWS - 3):
+        for c in range(COLS):
+            windows.append([board[r + i][c] for i in range(4)])
+    
+    # Diagonal windows.
+    for r in range(ROWS - 3):
+        for c in range(COLS - 3):
+            windows.append([board[r + i][c + i] for i in range(4)])
+            windows.append([board[r + 3 - i][c + i] for i in range(4)])
+    
+    for window in windows:
+        own = window.count(player)
+        opp = window.count(opponent)
+        empty = window.count(EMPTY)
+
+        if own == 3 and empty == 1:
+            score += 0.30
+        elif own == 2 and empty == 2:
+            score += 0.06
+
+        if opp == 3 and empty == 1:
+            score -= 0.36
+        elif opp == 2 and empty == 2:
+            score -= 0.05
+
+    return max(-0.95, min(0.95, score / 3.0))
+
+def immediate_win(board, player):
+    for col in legal_moves(board):
+        if winner(play_move(board, col, player)) == player:
+            return col
+    return None
