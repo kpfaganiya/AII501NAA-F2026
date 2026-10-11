@@ -166,7 +166,7 @@ def mcts(board, player=1, cycles=500, expansion=2,
     if cycles < 1 or expansion < 1 or height < 1:
         raise ValueError("Cycles, expansion and height must be positive.")
 
-    if not legal_moves(board);
+    if not legal_moves(board):
         raise ValueError("The board is full.")
 
     rng = random.Random(seed)
@@ -225,7 +225,11 @@ def mcts(board, player=1, cycles=500, expansion=2,
 
             def uct(child):
                 # Rewards are measured from the root player's view.
-                exploit = child.mean_value
+                exploit = (
+                    child.mean_value
+                    if node.player == player
+                    else -child.mean_value
+                )
                 explore = exploration * math.sqrt(
                     math.log(parent_visits + 1)
                     / (child.visits + 1e-9)
@@ -302,5 +306,5 @@ def main():
     print(f"Random seed: {args.seed}")
 
 
-if __name__ == "__main__";
+if __name__ == "__main__":
     main()
