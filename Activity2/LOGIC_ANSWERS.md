@@ -17,7 +17,7 @@ All answers below are worked by hand (truth tables and equivalence rules); no co
 
 True in some rows (so not unsatisfiable) and false in one row (so not valid).
 
-### b. ((Smoke ∧ Heat) ⇒ Fire) ⇔ ((Smoke ⇒ Fire) ∨ (Heat ⇒ Fire)) — **valid**
+### b. ((Smoke ∧ Heat) ⇒ Fire) ⇔ ((Smoke ⇒ Fire) ∨ (Heat ⇒ Fire)) - **valid**
 
 Truth table (L = (Smoke ∧ Heat) ⇒ Fire, R = (Smoke ⇒ Fire) ∨ (Heat ⇒ Fire)):
 
