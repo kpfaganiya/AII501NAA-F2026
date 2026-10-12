@@ -1,4 +1,4 @@
-# AII501NAA-F2026 – Activity 2
+# AII501NAA-F2026 - Activity 2
 
 | Part | Topic | Weight | Where |
 |------|-------|--------|-------|
