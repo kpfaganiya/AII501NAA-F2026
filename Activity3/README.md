@@ -22,3 +22,10 @@ Library versions used (printed in the "Load dependencies" cell):
 - pandas 2.2.3
 - matplotlib, plotly
 - google-ml-edu 0.1.3
+
+**Note on installation:** the original install cell gave a dependency error in Colab. I changed it to:
+
+    !pip install --no-deps google-ml-edu==0.1.3
+
+`--no-deps` stops pip from trying to reinstall or downgrade packages Colab already has (TensorFlow, Keras, pandas, etc.), and that fixed the error.
+
