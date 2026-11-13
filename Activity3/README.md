@@ -29,3 +29,27 @@ Library versions used (printed in the "Load dependencies" cell):
 
 `--no-deps` stops pip from trying to reinstall or downgrade packages Colab already has (TensorFlow, Keras, pandas, etc.), and that fixed the error.
 
+To run it locally instead of in Colab:
+
+    pip install tensorflow keras numpy pandas matplotlib plotly
+    pip install --no-deps google-ml-edu==0.1.3
+    jupyter notebook linear_regression_taxi.ipynb
+
+## How to Run
+
+1. Open `linear_regression_taxi.ipynb` in Google Colab (File → Upload notebook, or open it from GitHub).
+2. Click **Runtime → Run all**.
+3. The dataset downloads automatically from:
+   `https://download.mlcc.google.com/mledu-datasets/chicago_taxi_train.csv`
+   (31,694 rows; columns used: TRIP_MILES, TRIP_SECONDS, FARE, COMPANY, PAYMENT_TYPE, TIP_RATE)
+
+   ## What the Notebook Does
+
+1. **Dataset exploration**: summary statistics, a correlation matrix and a pair plot. TRIP_MILES has the strongest correlation with FARE (0.975).
+2. **Experiment 1**: one feature (TRIP_MILES), learning rate 0.001, 20 epochs, batch size 50. Final RMSE ≈ $3.75.
+3. **Hyperparameter experiments**:
+   - Learning rate 1.0: loss bounced around (RMSE ≈ $7) and never settled, because the steps are too large.
+   - Learning rate 0.0001: loss went down very slowly and had not converged after 20 epochs.
+   - Batch size 500: each epoch ran faster, but there were fewer weight updates, so it did not converge in 20 epochs.
+4. **Experiment 3**: two features (TRIP_MILES and TRIP_MINUTES). Final RMSE ≈ $3.48, better than one feature.
+5. **Validation**: predictions on a random sample of 50 trips, compared with the actual fares using L1 loss.
