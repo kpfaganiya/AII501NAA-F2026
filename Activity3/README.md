@@ -53,3 +53,18 @@ To run it locally instead of in Colab:
    - Batch size 500: each epoch ran faster, but there were fewer weight updates, so it did not converge in 20 epochs.
 4. **Experiment 3**: two features (TRIP_MILES and TRIP_MINUTES). Final RMSE ≈ $3.48, better than one feature.
 5. **Validation**: predictions on a random sample of 50 trips, compared with the actual fares using L1 loss.
+
+## Testing / Validation
+
+- Training was checked with the RMSE loss curves, to confirm the loss went down and levelled off (converged).
+- The two models were compared side by side with `compare_experiment` (one feature vs. two features).
+- Predictions on a random batch of 50 trips were checked by looking at the `L1_LOSS` (|observed − predicted|) column. Most errors were under about $1.50.
+- The learned weights were compared with the known Chicago fare formula: `FARE = 2.25 × TRIP_MILES + 0.12 × TRIP_MINUTES + 3.25`.
+
+## Assumptions and Limitations
+
+- The tutorial trains and evaluates on the **same dataset** and has no separate test set, so the reported RMSE is likely somewhat optimistic. A real project should evaluate on held-out test data (discussed in answers.md, Q2).
+- RMSE is reported as the error metric, because that is what the tutorial uses. The activity accepts MAE or MSE.
+- I assume the dataset URL above stays online.
+- Results can differ slightly between runs, because weight initialization and batch shuffling are random.
+- The TensorFlow "tf.function retracing" warning in Experiments 2b and 2c is harmless. It appears because each experiment builds a new model and calls predict on it repeatedly. It does not affect the results.
