@@ -19,4 +19,3 @@ Library versions used (printed in the "Load dependencies" cell):
 - NumPy 2.4.6
 - pandas 2.2.3
 - matplotlib, plotly
-- google-ml-edu 0.1.3
