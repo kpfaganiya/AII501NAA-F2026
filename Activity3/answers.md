@@ -9,7 +9,7 @@ The **input features** I used were `TRIP_MILES` (Experiment 1) and `TRIP_MILES` 
 
 This is a **regression** problem because the model predicts a continuous number, for example $27.63, and not a category. A classification problem would predict a label from a fixed set, such as "cash vs. credit card" or "expensive vs. cheap trip".
 
-2. Why split into training and test sets?
+# 2. Why split into training and test sets?
 
 We split the data so we can check how the model does on data it has **never seen**, which is what happens when it's used in real life. The training set is used to learn the weights, and the test set is used only to measure performance.
 
