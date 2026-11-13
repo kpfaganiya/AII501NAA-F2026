@@ -58,7 +58,7 @@ To run it locally instead of in Colab:
 
 - Training was checked with the RMSE loss curves, to confirm the loss went down and levelled off (converged).
 - The two models were compared side by side with `compare_experiment` (one feature vs. two features).
-- Predictions on a random batch of 50 trips were checked by looking at the `L1_LOSS` (|observed − predicted|) column. Most errors were under about $1.50.
+- Predictions on a random batch of 50 trips were checked by looking at the `L1_LOSS` (|observed - predicted|) column. Most errors were under about $1.50.
 - The learned weights were compared with the known Chicago fare formula: `FARE = 2.25 × TRIP_MILES + 0.12 × TRIP_MINUTES + 3.25`.
 
 ## Assumptions and Limitations
